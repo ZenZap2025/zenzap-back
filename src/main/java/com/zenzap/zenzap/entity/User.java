@@ -36,7 +36,7 @@ public class User {
     private String isActive;
 
     @Column(name = "token_activacion")
-    private String token;
+    private String resetToken;
 
     @Column(name = "expira_activacion")
     private String expireToken;
