@@ -20,7 +20,7 @@ public class EmailSendService {
     private JavaMailSender mailSender;
 
     public void sendRecoveryEmail(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        Optional<User> userOptional = userRepository.findByEmailAddress(email);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();

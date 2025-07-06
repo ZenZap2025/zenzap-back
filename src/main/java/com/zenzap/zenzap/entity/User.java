@@ -39,7 +39,8 @@ public class User {
     private String resetToken;
 
     @Column(name = "expira_activacion")
-    private String expireToken;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date expireToken;
 
     @Column(name = "tipo_usuario")
     private String typeUser;

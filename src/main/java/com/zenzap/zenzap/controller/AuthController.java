@@ -1,5 +1,7 @@
 package com.zenzap.zenzap.controller;
 
+import com.zenzap.zenzap.controller.dto.LoginResponse;
+import com.zenzap.zenzap.controller.dto.UserProfileResponse;
 import com.zenzap.zenzap.controller.dto.UserRegisterRequest;
 import com.zenzap.zenzap.controller.dto.UserUpdateRequest;
 import com.zenzap.zenzap.entity.User;
@@ -15,24 +17,28 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
 
-        boolean isValid = authService.validateLogin(username, password);
-        if (isValid) {
-            return ResponseEntity.ok("Login exitoso");
+        Optional<User> userOptional = authService.validateLogin(username, password);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            System.out.println("este es el id devuelto del login: " + user.getId());
+            LoginResponse response = new LoginResponse("Login exitoso", user.getId());
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
         }
     }
+
 
     @PostMapping("/recover-password")
     public ResponseEntity<String> recoverPassword(@RequestBody Map<String, String> request) {
@@ -82,6 +88,18 @@ public class AuthController {
         authService.updateUser(id, request);
         return ResponseEntity.ok("Usuario actualizado correctamente.");
     }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getUserProfile(@PathVariable Long id) {
+        System.out.println("este es el id del usuario: " + id);
+        try {
+            UserProfileResponse profile = authService.getUserProfile(id);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
 }
 
