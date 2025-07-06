@@ -3,6 +3,7 @@ package com.zenzap.zenzap.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.OffsetDateTime;
+import lombok.Setter;
 import java.util.List;
 
 @Entity
@@ -24,7 +25,7 @@ public class Product {
     private Double price;
 
     @Column(name = "url_imagen")
-    private String imageUrl;
+    private String urlimagen;
 
     @Column(name = "stock")
     private Integer stock;
@@ -34,5 +35,21 @@ public class Product {
 
     @Column(name = "actualizado_en")
     private OffsetDateTime updatedAt;
+
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+
+
+
 }
 
