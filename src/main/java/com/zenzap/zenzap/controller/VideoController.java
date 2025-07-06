@@ -21,32 +21,60 @@ public class VideoController {
 
     /**
      * GET /api/videos
-     * @param categoryId opcional, filtrar por subcategoría
-     * @param size       opcional, número de vídeos a devolver (por defecto 5)
-     * @return página de vídeos
+     * Listar vídeos, opcionalmente filtrados por subcategoría, con paginación.
      */
     @GetMapping
     public ResponseEntity<Page<Video>> listVideos(
             @RequestParam(value = "categoryId", required = false) Long categoryId,
             @RequestParam(value = "size", defaultValue = "5") int size
     ) {
-        Page<Video> page;
-        if (categoryId != null) {
-            page = videoService.getVideosByCategory(categoryId, size);
-        } else {
-            page = videoService.getRandomVideos(size);
-        }
+        Page<Video> page = (categoryId != null)
+                ? videoService.getVideosByCategory(categoryId, size)
+                : videoService.getRandomVideos(size);
         return ResponseEntity.ok(page);
     }
 
     /**
+     * GET /api/videos/{id}
+     * Obtener un vídeo por su ID (para rellenar el formulario de edición).
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Video> getVideoById(@PathVariable Long id) {
+        Video video = videoService.getById(id);
+        return ResponseEntity.ok(video);
+    }
+
+    /**
      * POST /api/videos
-     * Crea un nuevo vídeo a partir de los datos del DTO.
+     * Crear un nuevo vídeo.
      */
     @PostMapping
     public ResponseEntity<Video> createVideo(@RequestBody VideoRequest req) {
-        // Aquí usamos 1L como ID de admin; en producción extraerías el ID del usuario autenticado
+        // En producción tomarías el ID real del usuario autenticado
         Video created = videoService.createVideo(req, 2L);
         return ResponseEntity.ok(created);
+    }
+
+    /**
+     * PUT /api/videos/{id}
+     * Actualizar un vídeo existente.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Video> updateVideo(
+            @PathVariable Long id,
+            @RequestBody VideoRequest req
+    ) {
+        Video updated = videoService.updateVideo(id, req);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * DELETE /api/videos/{id}
+     * Eliminar un vídeo por su ID.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVideo(@PathVariable Long id) {
+        videoService.deleteVideo(id);
+        return ResponseEntity.noContent().build();
     }
 }

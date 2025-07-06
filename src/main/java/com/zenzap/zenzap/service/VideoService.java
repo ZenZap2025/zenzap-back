@@ -31,32 +31,36 @@ public class VideoService {
     }
 
     /**
-     * Obtiene videos por categoría con paginación.
+     * Obtiene vídeos de una subcategoría específica.
      */
     public Page<Video> getVideosByCategory(Long categoryId, int size) {
         return videoRepository.findByCategoryId(categoryId, PageRequest.of(0, size));
     }
 
     /**
-     * Obtiene videos aleatorios con paginación.
+     * Obtiene vídeos aleatorios de todas las categorías.
      */
     public Page<Video> getRandomVideos(int size) {
         return videoRepository.findAllRandom(PageRequest.of(0, size));
     }
 
     /**
-     * Crea un nuevo video a partir del DTO y el ID del usuario.
+     * Recupera un vídeo por su ID.
+     */
+    public Video getById(Long id) {
+        return videoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vídeo no encontrado: " + id));
+    }
+
+    /**
+     * Crea un nuevo vídeo a partir del DTO y del ID de usuario.
      */
     public Video createVideo(VideoRequest req, Long userId) {
-        // 1) Recuperar categoría
         Category cat = categoryRepository.findById(req.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Categoría no válida: " + req.getCategoryId()));
-
-        // 2) Recuperar usuario
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + userId));
 
-        // 3) Construir entidad Video
         Video v = new Video();
         v.setYoutubeUrl(req.getYoutubeUrl());
         v.setTitle(req.getTitle());
@@ -66,9 +70,37 @@ public class VideoService {
         v.setCreatedBy(user);
         v.setCreatedAt(OffsetDateTime.now());
 
-        // 4) Guardar
         return videoRepository.save(v);
     }
+
+    /**
+     * Actualiza un vídeo existente.
+     */
+    public Video updateVideo(Long id, VideoRequest req) {
+        Video existing = getById(id);
+
+        Category cat = categoryRepository.findById(req.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Categoría no válida: " + req.getCategoryId()));
+
+        existing.setYoutubeUrl(req.getYoutubeUrl());
+        existing.setTitle(req.getTitle());
+        existing.setDescription(req.getDescription());
+        existing.setDurationInSeconds(req.getDurationInSeconds());
+        existing.setCategory(cat);
+        // dejamos createdBy y createdAt originales
+
+        return videoRepository.save(existing);
+    }
+
+    /**
+     * Elimina un vídeo por su ID.
+     */
+    public void deleteVideo(Long id) {
+        // lanzará excepción si no existe
+        Video toDelete = getById(id);
+        videoRepository.delete(toDelete);
+    }
 }
+
 
 
