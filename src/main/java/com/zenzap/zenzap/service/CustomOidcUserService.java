@@ -2,6 +2,7 @@ package com.zenzap.zenzap.service;
 
 import com.zenzap.zenzap.entity.User;
 import com.zenzap.zenzap.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class CustomOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
+    private final HttpServletRequest httpServletRequest;
 
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) {
@@ -26,7 +28,8 @@ public class CustomOidcUserService extends OidcUserService {
 
         Optional<User> existingUser = userRepository.findByEmailAddress(email);
 
-        User user = existingUser.orElseGet(() -> {
+        User user;
+        if (existingUser.isEmpty()) {
             User newUser = new User();
             newUser.setEmailAddress(email);
             newUser.setUsername(name);
@@ -34,12 +37,11 @@ public class CustomOidcUserService extends OidcUserService {
             newUser.setProviderId(googleId);
             newUser.setIsActive("true");
             newUser.setTypeUser("USER");
-            return newUser;
-        });
-
-        System.out.println("✅ Guardando nuevo usuario: " + user);
-        userRepository.save(user);
-
+            user = userRepository.save(newUser);
+        } else {
+            user = existingUser.get();
+        }
+        httpServletRequest.getSession().setAttribute("dbUserId", user.getId());
         return oidcUser;
     }
 }
