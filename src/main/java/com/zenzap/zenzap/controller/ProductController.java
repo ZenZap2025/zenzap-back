@@ -1,7 +1,9 @@
 package com.zenzap.zenzap.controller;
+import com.zenzap.zenzap.controller.dto.OrderRequest;
 import com.zenzap.zenzap.controller.dto.PurchaseRequest;
 import com.zenzap.zenzap.entity.Product;
 import com.zenzap.zenzap.service.ProductService;
+import com.zenzap.zenzap.service.PurchaseEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,12 +60,12 @@ public class ProductController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<?> buyProducts(@RequestBody List<PurchaseRequest> requests) {
-        if (requests == null || requests.isEmpty()) {
+    public ResponseEntity<?> buyProducts(@RequestBody OrderRequest order) {
+        if (order.getProducts() == null || order.getProducts().isEmpty()) {
             return ResponseEntity.badRequest().body("La lista de productos está vacía.");
         }
 
-        for (PurchaseRequest request : requests) {
+        for (PurchaseRequest request : order.getProducts()) {
             Optional<Product> productOpt = productService.buyProduct(request.getProductId(), request.getQuantity());
 
             if (productOpt.isEmpty()) {
@@ -72,8 +74,21 @@ public class ProductController {
             }
         }
 
+        // ✅ Enviar correo de confirmación con resumen de productos
+        purchaseEmailService.sendPurchaseConfirmation(
+                order.getEmail(),
+                order.getClientName(),
+                order.getAddress(),
+                order.getProducts()
+        );
+
         return ResponseEntity.ok("Compra procesada con éxito.");
     }
+
+
+    @Autowired
+    private PurchaseEmailService purchaseEmailService;
+
 
 
 
