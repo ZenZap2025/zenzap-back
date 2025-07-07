@@ -32,7 +32,7 @@ public class AuthController {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             System.out.println("este es el id devuelto del login: " + user.getId());
-            LoginResponse response = new LoginResponse("Login exitoso", user.getId());
+            LoginResponse response = new LoginResponse("Login exitoso", user.getId(), user.getTypeUser());
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");

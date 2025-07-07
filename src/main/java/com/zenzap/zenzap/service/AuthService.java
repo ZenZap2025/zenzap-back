@@ -90,9 +90,9 @@ public class AuthService {
             user.setEmailAddress(request.getEmail());
             user.setBirthday(birthday);
             user.setPassword(hashedPassword);
-            user.setIsActive("Y");
+            user.setIsActive("true");
             user.setCreateIn(new Date().toString());
-            user.setTypeUser("user");
+            user.setTypeUser("USER");
             userRepository.save(user);
             System.out.println("Usuario creado: " + user.getEmailAddress());
         } catch (Exception e) {
